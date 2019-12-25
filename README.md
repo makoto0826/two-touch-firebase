@@ -36,7 +36,7 @@ firebase.jsonの下記の部分を
 ``` json
 "predeploy": [
     "npm --prefix \"$RESOURCE_DIR\" run build"
-}
+]
 ```
 
 下記のように変更してください。
@@ -44,7 +44,7 @@ firebase.jsonの下記の部分を
 ``` json
 "predeploy": [
     "npm --prefix %RESOURCE_DIR% run build"
-}
+]
 ```
 
 # ローカル実行
