@@ -3,9 +3,9 @@ import * as admin from 'firebase-admin';
 admin.initializeApp()
 
 const funcs = {
-    addTimeRecord: './addTimeRecord',
-    getInformation: './getInformation',
-    getUsers: './getUsers',
+    addTimeRecord: './api/addTimeRecord',
+    getInformation: './api/getInformation',
+    getUsers: './api/getUsers',
 };
 
 const loadFunctions = (funcs: any) => {

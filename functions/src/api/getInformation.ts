@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from './constants';
+import { FirestoreCollectionNames, FirestoreDocumentNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
 import { checkApiKey } from './utils';
 
 const firestore = admin.firestore();
@@ -12,6 +12,7 @@ export default functions
     .region(TOKYO_REGION)
     .runWith(RUNTIME_OPTIONS)
     .https.onRequest(async (req, res) => {
+
         const apiKey = req.header(X_API_KEY) as string;
 
         try {
@@ -20,20 +21,18 @@ export default functions
                 return;
             }
 
-            const snapshot = await firestore.collection(FirestoreCollectionNames.USERS).get()
-            const results = [];
+            const versionDoc = await firestore.collection(FirestoreCollectionNames.INFORMATION)
+                .doc(FirestoreDocumentNames.VERSION)
+                .get()
 
-            for (const doc of snapshot.docs) {
-                const data = doc.data();
+            const version = versionDoc.data() as FirebaseFirestore.DocumentData;
 
-                results.push({
-                    userId: data.userId,
-                    userName: data.userName,
-                    cards: data.cards
-                });
-            }
+            res.send({
+                version: {
+                    usersVersion: version.usersVersion
+                }
+            });
 
-            res.send(results);
         } catch (ex) {
             console.error(ex);
             res.status(500).send({ message: 'internal server error' });

@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { FirestoreCollectionNames } from './constants';
+import { FirestoreCollectionNames } from '../constants';
 
 const firestore = admin.firestore()
 

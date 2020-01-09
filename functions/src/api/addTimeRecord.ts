@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from './constants';
+import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
 import { AddTimeRecordRequest, AddTimeRecordStatus } from './requests';
 import { checkApiKey } from './utils';
 
