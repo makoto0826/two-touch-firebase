@@ -5,9 +5,6 @@ import { checkApiKey } from './utils';
 
 const firestore = admin.firestore();
 
-/**
- * 
- */
 export default functions
     .region(TOKYO_REGION)
     .runWith(RUNTIME_OPTIONS)

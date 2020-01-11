@@ -13,7 +13,9 @@ export const FirestoreCollectionNames = {
 } as const
 
 export const FirestoreDocumentNames = {
-    VERSION : 'version'
+    VERSION : 'version',
+    
+    KING_OF_TIME : 'kingOfTime'
 } as const
 
 
