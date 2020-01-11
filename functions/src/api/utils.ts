@@ -1,12 +1,9 @@
 import * as admin from 'firebase-admin';
 import { FirestoreCollectionNames } from '../constants';
+import { DeviceData } from '../model';
 
 const firestore = admin.firestore()
 
-/**
- * 
- * @param apiKey 
- */
 export async function checkApiKey(apiKey: string) {
     if (!apiKey) {
         return false;
@@ -20,6 +17,6 @@ export async function checkApiKey(apiKey: string) {
         return false;
     }
 
-    const doc = snapshot.docs[0];
-    return doc.data().apiKey === apiKey;
+    const device = snapshot.docs[0].data() as DeviceData;
+    return device.apiKey === apiKey;
 }

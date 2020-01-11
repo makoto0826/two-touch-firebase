@@ -3,10 +3,12 @@ import * as admin from 'firebase-admin';
 import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS, FirestoreDocumentNames } from '../constants';
 import { AddTimeRecordRequest } from './request';
 import { checkApiKey } from './utils';
-import { TimeRecordStatus, KingOfTimeData } from '../model';
+import { TimeRecordStatus, KingOfTimeData, UserData, TimeRecordData } from '../model';
 import { KingOfTimeApiOptions, KingOfTimeApi } from '../kingOfTime';
 
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Tokyo');
+
 const firestore = admin.firestore();
 
 export default functions
@@ -34,8 +36,7 @@ export default functions
                 return;
             }
 
-            const userDoc = userSnapshot.docs[0].data();
-            const kingOfTimeId = userDoc.kingOfTimeId;
+            const userData = userSnapshot.docs[0].data() as UserData;
             let status = TimeRecordStatus.OK;
 
             await firestore.runTransaction(async (tx) => {
@@ -60,16 +61,20 @@ export default functions
 
                 const registerdAt = moment(request.registeredAt);
 
-                const result = await api.addDailyTimeRecord({
-                    employeeKey: kingOfTimeId,
+                const addDailyTimeRecordRequest = {
+                    employeeKey: userData.kingOfTimeId,
                     date: registerdAt.format('YYYY-MM-DD'),
                     time: registerdAt.format('YYYY-MM-DDTHH:mm:Z'),
                     code: request.type
-                });
+                };
+
+                console.log(addDailyTimeRecordRequest);
+
+                const result = await api.addDailyTimeRecord(addDailyTimeRecordRequest);
 
                 if (!result.ok) {
                     status = TimeRecordStatus.API_ERROR;
-                    console.error(result);
+                    console.error(result.json);
                 }
 
                 tx.create(timeRecordRef, {
@@ -80,10 +85,10 @@ export default functions
                     type: request.type,
                     status: status,
                     registeredAt: request.registeredAt,
-                    kingOfTimeId: kingOfTimeId,
+                    kingOfTimeId: userData.kingOfTimeId,
                     createdAt: admin.firestore.FieldValue.serverTimestamp(),
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
-                });
+                } as TimeRecordData);
             });
 
             res.send();

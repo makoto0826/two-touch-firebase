@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
 import { checkApiKey } from './utils';
+import { UserData } from '../model';
 
 const firestore = admin.firestore();
 
@@ -18,10 +19,10 @@ export default functions
             }
 
             const snapshot = await firestore.collection(FirestoreCollectionNames.USERS).get()
-            const results = [];
+            const results: Partial<UserData>[] = [];
 
             for (const doc of snapshot.docs) {
-                const data = doc.data();
+                const data = doc.data() as UserData;
 
                 results.push({
                     userId: data.userId,

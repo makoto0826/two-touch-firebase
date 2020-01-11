@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FirestoreCollectionNames, FirestoreDocumentNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
 import { checkApiKey } from './utils';
+import { VersionData } from '../model';
 
 const firestore = admin.firestore();
 
@@ -22,7 +23,7 @@ export default functions
                 .doc(FirestoreDocumentNames.VERSION)
                 .get()
 
-            const version = versionDoc.data() as FirebaseFirestore.DocumentData;
+            const version = versionDoc.data() as VersionData;
 
             res.send({
                 version: {
