@@ -1,5 +1,5 @@
-import { TimeRecordStatus } from "./timeRecordStatus"
-import { TimeRecordType } from "../kingOfTime/model"
+import { TimeRecordStatus } from "./time-record-status"
+import { TimeRecordType } from "../king-of-time/model"
 
 export type TimeRecordData = {
     localTimeRecordId: string

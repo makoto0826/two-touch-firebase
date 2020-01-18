@@ -1,4 +1,4 @@
-import { TimeRecordType } from "../../kingOfTime/model";
+import { TimeRecordType } from "../../king-of-time/model";
 
 export type AddTimeRecordRequest = {
     localTimeRecordId: string

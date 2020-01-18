@@ -4,7 +4,7 @@ import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } fr
 import { AddTimeRecordRequest } from './request';
 import { checkApiKey, getKingOfTimeData } from '../utils';
 import { TimeRecordStatus, UserData, TimeRecordData } from '../model';
-import { KingOfTimeApiOptions, KingOfTimeApi } from '../kingOfTime';
+import { KingOfTimeApiOptions, KingOfTimeApi } from '../king-of-time';
 
 const moment = require('moment-timezone');
 moment.tz.setDefault('Asia/Tokyo');
