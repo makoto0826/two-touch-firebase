@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
-import { checkApiKey } from './utils';
+import { checkApiKey } from '../utils';
 import { UserData } from '../model';
 
 const firestore = admin.firestore();

@@ -1,0 +1,1 @@
+export type Gender = 'no_selected' | 'male' | 'female';

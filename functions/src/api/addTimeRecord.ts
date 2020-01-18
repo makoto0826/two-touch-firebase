@@ -1,9 +1,9 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS, FirestoreDocumentNames } from '../constants';
+import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
 import { AddTimeRecordRequest } from './request';
-import { checkApiKey } from './utils';
-import { TimeRecordStatus, KingOfTimeData, UserData, TimeRecordData } from '../model';
+import { checkApiKey, getKingOfTimeData } from '../utils';
+import { TimeRecordStatus, UserData, TimeRecordData } from '../model';
 import { KingOfTimeApiOptions, KingOfTimeApi } from '../kingOfTime';
 
 const moment = require('moment-timezone');
@@ -36,17 +36,7 @@ export default functions
                 return;
             }
 
-            const kingOfTimeSnapshot = await firestore.collection(FirestoreCollectionNames.INFORMATION)
-                .doc(FirestoreDocumentNames.KING_OF_TIME)
-                .get();
-
-            if (!kingOfTimeSnapshot.exists) {
-                console.error('king of time toekn not found');
-                res.status(400).send({ message: 'king of time toekn not found' });
-                return;
-            }
-
-            const kingOfTimeData = kingOfTimeSnapshot.data() as KingOfTimeData;
+            const kingOfTimeData = await getKingOfTimeData();
 
             const userData = userSnapshot.docs[0].data() as UserData;
             let status = TimeRecordStatus.OK;
