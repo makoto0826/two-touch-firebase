@@ -1,7 +1,7 @@
 # Firebase
 
 # 概要
-タイムレコーダーのFirebase アプリケーションになります。
+King Of Timeと連携するタイムレコーダーのFirebase アプリケーションになります。
 
 # 必要な情報
 - Google Account
