@@ -20,7 +20,7 @@
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
     "node-fetch": "^2.6.0",
-    "npm": "^6.13.4"
+    "npm": "^6.14.6"
   },
   "devDependencies": {
     "typescript": "^3.2.2",
