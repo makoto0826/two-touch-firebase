@@ -1,4 +1,4 @@
-import { AdditionalField } from "./additional-field";
+import { AdditionalField } from './additional-field';
 
 export type ListEmployeesRequest = {
     date: string | null,

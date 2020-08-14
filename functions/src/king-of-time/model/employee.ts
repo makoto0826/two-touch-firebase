@@ -1,4 +1,4 @@
-import { Gender } from "./gender";
+import { Gender } from './gender';
 
 export type Employee = {
     divisionCode: string
@@ -12,9 +12,9 @@ export type Employee = {
     firstName: string
     lastNamePhonetics?: string
     firstNamePhonetics?: string
-    hiredDate?:string
-    birthDate?:string
-    resignationDate?:string
-    emailAddresses?:string[]
-    allDayRegardingWorkInMinute?:string
+    hiredDate?: string
+    birthDate?: string
+    resignationDate?: string
+    emailAddresses?: string[]
+    allDayRegardingWorkInMinute?: string
 }

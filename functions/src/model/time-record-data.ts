@@ -3,7 +3,7 @@ import { TimeRecordType } from "../king-of-time/model"
 
 export type TimeRecordData = {
     localTimeRecordId: string
-    cardId: string
+    card: string
     userId: string
     userName: string
     type: TimeRecordType

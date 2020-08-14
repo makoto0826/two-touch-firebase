@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
+import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS, DEFAULT_ERROR_RESPONSE, FirestoreSubCollectionNames } from '../constants';
 import { AddTimeRecordRequest } from './request';
-import { checkApiKey, getKingOfTimeData } from '../utils';
+import { getDeviceByApiKey, getKingOfTimeData } from '../utils';
 import { TimeRecordStatus, UserData, TimeRecordData } from '../model';
 import { KingOfTimeApiOptions, KingOfTimeApi } from '../king-of-time';
 
@@ -12,86 +12,105 @@ moment.tz.setDefault('Asia/Tokyo');
 const firestore = admin.firestore();
 
 export default functions
-    .region(TOKYO_REGION)
-    .runWith(RUNTIME_OPTIONS)
-    .https.onRequest(async (req, res) => {
-        const apiKey = req.header(X_API_KEY) as string
+    .region(TOKYO_REGION)
+    .runWith(RUNTIME_OPTIONS)
+    .https.onRequest(async (req, res) => {
+        const apiKey = req.header(X_API_KEY) as string
 
-        try {
-            if (!await checkApiKey(apiKey)) {
-                res.status(401).send({ message: 'unauthorized' });
-                return;
-            }
+        try {
+            const device = await getDeviceByApiKey(apiKey);
 
-            const request = req.body as AddTimeRecordRequest
+            if (device === null) {
+                res.status(401).send(DEFAULT_ERROR_RESPONSE.Unauthorized);
+                return;
+            }
 
-            const userSnapshot = await firestore.collection(FirestoreCollectionNames.USERS)
-                .where('userId', '==', request.userId)
-                .where('cards', 'array-contains', request.cardId)
-                .get();
+            const request = req.body as AddTimeRecordRequest
 
-            if (userSnapshot.empty) {
-                console.error('user not found', request.localTimeRecordId);
-                res.status(400).send({ message: 'user not found' });
-                return;
-            }
+            const userSnapshot = await firestore.collection(FirestoreCollectionNames.USERS)
+                .where('userId', '==', request.userId)
+                .get();
 
-            const kingOfTimeData = await getKingOfTimeData();
+            if (userSnapshot.empty) {
+                console.error('user not found', request.localTimeRecordId);
+                res.status(400).send({
+                    code: '400.1',
+                    message: 'user not found'
+                });
 
-            const userData = userSnapshot.docs[0].data() as UserData;
-            let status = TimeRecordStatus.OK;
+                return;
+            }
 
-            await firestore.runTransaction(async (tx) => {
-                const timeRecordQuery = firestore.collection(FirestoreCollectionNames.TIME_RECORDS)
-                    .where('localTimeRecordId', '==', request.localTimeRecordId);
+            const userData = userSnapshot.docs[0].data() as UserData;
 
-                const timeRecordSnapshot = await tx.get(timeRecordQuery);
+            await firestore.runTransaction(async (tx) => {
+                const timeRecordQuery =
+                    firestore.collection(FirestoreCollectionNames.DEVICES)
+                        .doc(device.id)
+                        .collection(FirestoreSubCollectionNames.TIME_RECORDS)
+                        .where('localTimeRecordId', '==', request.localTimeRecordId);
 
-                if (!timeRecordSnapshot.empty) {
-                    console.error('duplicate localTimeRecordId', request.localTimeRecordId);
-                    res.status(400).send({ message: 'duplicate localTimeRecordId' });
-                    return;
-                }
+                const timeRecordSnapshot = await tx.get(timeRecordQuery);
 
-                const api = new KingOfTimeApi(new KingOfTimeApiOptions(kingOfTimeData.token));
+                if (!timeRecordSnapshot.empty) {
+                    console.error('duplicate localTimeRecordId', request.localTimeRecordId);
+                    res.status(400).send({
+                        code: '400.2',
+                        message: 'duplicate local time record id'
+                    });
 
-                const registerdAt = moment(request.registeredAt);
+                    return;
+                }
 
-                const addDailyTimeRecordRequest = {
-                    employeeKey: userData.kingOfTimeId,
-                    date: registerdAt.format('YYYY-MM-DD'),
-                    time: registerdAt.format('YYYY-MM-DDTHH:mm:00Z'),
-                    code: request.type
-                };
+                const kingOfTimeData = await getKingOfTimeData();
+                const api = new KingOfTimeApi(new KingOfTimeApiOptions(kingOfTimeData.token));
 
-                console.log('addDailyTimeRecordRequest', addDailyTimeRecordRequest);
+                const registerdAt = moment(request.registeredAt);
 
-                const result = await api.addDailyTimeRecord(addDailyTimeRecordRequest);
+                const addDailyTimeRecordRequest = {
+                    employeeKey: userData.kingOfTimeId,
+                    date: registerdAt.format('YYYY-MM-DD'),
+                    time: registerdAt.format('YYYY-MM-DDTHH:mm:00Z'),
+                    code: request.type
+                };
 
-                if (!result.ok) {
-                    status = TimeRecordStatus.API_ERROR;
-                    console.error('error json', result.json);
-                }
+                console.log('addDailyTimeRecordRequest', addDailyTimeRecordRequest);
+                const result = await api.addDailyTimeRecord(addDailyTimeRecordRequest);
 
-                const timeRecordRef = firestore.collection(FirestoreCollectionNames.TIME_RECORDS).doc();
+                if (!result.ok) {
+                    status = TimeRecordStatus.SYNC_ERROR;
+                    res.status(400).send({
+                        code: '400.3',
+                        message: 'king of time error'
+                    });
 
-                tx.create(timeRecordRef, {
-                    localTimeRecordId: request.localTimeRecordId,
-                    cardId: request.cardId,
-                    userId: request.userId,
-                    userName: request.userName,
-                    type: request.type,
-                    status: status,
-                    registeredAt: request.registeredAt,
-                    kingOfTimeId: userData.kingOfTimeId,
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-                } as TimeRecordData);
-            });
+                    console.error('error json', result.json);
+                    return;
+                }
 
-            res.send();
-        } catch (ex) {
-            console.error(ex);
-            res.status(500).send({ message: 'internal server error' });
-        }
-    });
+                const timeRecordRef =
+                    firestore.collection(FirestoreCollectionNames.DEVICES)
+                        .doc(device.id)
+                        .collection(FirestoreSubCollectionNames.TIME_RECORDS)
+                        .doc();
+
+                tx.create(timeRecordRef, {
+                    localTimeRecordId: request.localTimeRecordId,
+                    card: request.card,
+                    userId: request.userId,
+                    userName: request.userName,
+                    type: request.type,
+                    status: TimeRecordStatus.SYNCED,
+                    registeredAt: request.registeredAt,
+                    kingOfTimeId: userData.kingOfTimeId,
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                } as TimeRecordData);
+            });
+
+            res.send();
+        } catch (ex) {
+            console.error(ex);
+            res.status(500).send(DEFAULT_ERROR_RESPONSE.InternalServerError);
+        }
+    });

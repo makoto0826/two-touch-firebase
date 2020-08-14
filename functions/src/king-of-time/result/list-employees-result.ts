@@ -1,5 +1,5 @@
-import { ApiResult } from "./api-result";
-import { Employee } from "../model";
+import { ApiResult } from './api-result';
+import { Employee } from '../model';
 
 export class ListEmployeesResult extends ApiResult {
     get values() {

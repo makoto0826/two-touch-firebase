@@ -1,12 +1,12 @@
 import * as admin from 'firebase-admin';
 import { FirestoreCollectionNames, FirestoreDocumentNames } from './constants';
-import { DeviceData, KingOfTimeData } from './model';
+import { DeviceData, KingOfTimeData, Device } from './model';
 
 const firestore = admin.firestore()
 
-export async function checkApiKey(apiKey: string) {
+export async function getDeviceByApiKey(apiKey: string) {
     if (!apiKey) {
-        return false;
+        return null;
     }
 
     const snapshot = await firestore.collection(FirestoreCollectionNames.DEVICES)
@@ -14,11 +14,15 @@ export async function checkApiKey(apiKey: string) {
         .get()
 
     if (snapshot.empty) {
-        return false;
+        return null;
     }
 
-    const device = snapshot.docs[0].data() as DeviceData;
-    return device.apiKey === apiKey;
+    const deviceDoc = snapshot.docs[0];
+
+    return new Device(
+        deviceDoc.id,
+        deviceDoc.data() as DeviceData
+    ) as Readonly<Device>;
 }
 
 export async function getKingOfTimeData() {

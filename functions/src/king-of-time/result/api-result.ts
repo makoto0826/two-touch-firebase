@@ -1,4 +1,3 @@
-
 export abstract class ApiResult {
 
     protected _json: any;

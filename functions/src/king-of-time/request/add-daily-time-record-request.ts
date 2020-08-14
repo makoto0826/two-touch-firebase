@@ -1,4 +1,4 @@
-import { TimeRecordType } from "../model";
+import { TimeRecordType } from '../model';
 
 export type AddDailyTimeRecordRequest = {
     employeeKey: string

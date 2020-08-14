@@ -1,6 +1,6 @@
-import { KingOfTimeApiOptions } from "./king-of-time-api-options";
-import { AddDailyTimeRecordRequest, ListEmployeesRequest } from "./request";
-import { ErrorResult, ListEmployeesResult, AddDailyTimeRecordResult } from "./result";
+import { KingOfTimeApiOptions } from './king-of-time-api-options';
+import { AddDailyTimeRecordRequest, ListEmployeesRequest } from './request';
+import { ErrorResult, ListEmployeesResult, AddDailyTimeRecordResult } from './result';
 const fetch = require('node-fetch');
 
 const ADD_DAILY_TIME_CARD_BODY = ['date', 'time', 'code'];

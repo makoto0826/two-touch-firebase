@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS } from '../constants';
-import { checkApiKey } from '../utils';
+import { FirestoreCollectionNames, X_API_KEY, TOKYO_REGION, RUNTIME_OPTIONS, DEFAULT_ERROR_RESPONSE } from '../constants';
+import { getDeviceByApiKey } from '../utils';
 import { UserData } from '../model';
 
 const firestore = admin.firestore();
@@ -13,8 +13,10 @@ export default functions
         const apiKey = req.header(X_API_KEY) as string;
 
         try {
-            if (!await checkApiKey(apiKey)) {
-                res.status(401).send({ message: 'unauthorized' });
+            const device = await getDeviceByApiKey(apiKey);
+
+            if (device === null) {
+                res.status(401).send(DEFAULT_ERROR_RESPONSE.Unauthorized);
                 return;
             }
 
@@ -34,6 +36,7 @@ export default functions
             res.send(results);
         } catch (ex) {
             console.error(ex);
-            res.status(500).send({ message: 'internal server error' });
+            res.status(500).send(DEFAULT_ERROR_RESPONSE.InternalServerError);
         }
     });
+
