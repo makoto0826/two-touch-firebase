@@ -78,7 +78,6 @@ export default functions
                 const result = await api.addDailyTimeRecord(addDailyTimeRecordRequest);
 
                 if (!result.ok) {
-                    status = TimeRecordStatus.SYNC_ERROR;
                     res.status(400).send({
                         code: '400.3',
                         message: 'king of time error'
